@@ -1,7 +1,8 @@
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using ProductService.Api.Extensions;
 using ProductService.Api.Middleware;
-using System.Reflection;
+using ProductService.Application.Map;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,16 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ProductDbContext>(options =>
 	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+#region AutoMapper
+var mapperConfig = new MapperConfiguration(mp => 
+{
+	mp.AddProfile(new MappingProfile());
+});
+
+IMapper mapper = mapperConfig.CreateMapper();
+builder.Services.AddSingleton(mapper);
+builder.Services.AddMvc();
+#endregion
 
 builder.Services.RegisterServices(builder.Configuration);
 

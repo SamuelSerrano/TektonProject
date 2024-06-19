@@ -1,4 +1,5 @@
-﻿using Azure.Core;
+﻿using AutoMapper;
+using Azure.Core;
 using MediatR;
 using ProductService.Application.Interfaces;
 using ProductService.Application.Response;
@@ -12,15 +13,16 @@ namespace ProductService.Application.Services
 		private readonly IUnitOfWork? _unitOfWork;
 		private readonly ICacheService? _cacheService;
 		private readonly IDiscountService? _discountService;
+		private readonly IMapper _mapper;
 
-
-		public ProductService(IUnitOfWork unitOfWork, ICacheService cacheService, IDiscountService discountService)
-        {
+		public ProductService(IUnitOfWork unitOfWork, ICacheService cacheService, IDiscountService discountService, IMapper mapper)
+		{
 			_cacheService = cacheService;
 			_unitOfWork = unitOfWork;
 			_discountService = discountService;
+			_mapper = mapper;
 		}
-		
+
 		async Task<ProductResponse> IProductService.CreateProduct(Product Producto)
 		{
 			await _unitOfWork.Product.AddAsync(Producto);
@@ -59,18 +61,11 @@ namespace ProductService.Application.Services
 			var statusName = _cacheService.GetStatusName(Producto.Status);
 			var discount = await _discountService.GetDiscountAsync(Producto.ProductId);
 
-			return new ProductResponse
-			{
-				ProductId = Producto.ProductId,
-				Name = Producto.Name,
-				Status = Producto.Status,
-				StatusName = statusName,
-				Stock = Producto.Stock,
-				Description = Producto.Description,
-				Price = Producto.Price,
-				Discount = discount,
-				FinalPrice = Producto.Price * (100 - discount)/100
-			};
+			ProductResponse productResponse = _mapper.Map<ProductResponse>(Producto);
+			productResponse.StatusName = statusName;
+			productResponse.Discount = discount;
+			productResponse.FinalPrice = Producto.Price * (100 - discount) / 100;
+			return productResponse;
 		}
 	}
 }
