@@ -33,7 +33,7 @@ Esta arquitectura fomenta la modularidad, el bajo acoplamiento y la alta cohesi√
 
 1. Clona el repositorio:
     ```sh
-    git clone https://github.com/tu-repositorio/ProductService.git
+    git clone https://github.com/SamuelSerrano/TektonProject.git
     cd ProductService
     ```
 
