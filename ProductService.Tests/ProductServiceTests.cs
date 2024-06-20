@@ -1,6 +1,8 @@
-﻿using FluentAssertions;
+﻿using AutoMapper;
+using FluentAssertions;
 using Moq;
 using ProductService.Application.Interfaces;
+using ProductService.Application.Response;
 using ProductService.Domain.Entities;
 using ProductService.Infrastructure.Repositories.Interfaces;
 using System.Linq.Expressions;
@@ -13,14 +15,16 @@ namespace ProductService.Tests
 		private readonly Mock<IUnitOfWork> _unitOfWorkMock;
 		private readonly Mock<IDiscountService> _discountServiceMock;
 		private readonly Mock<ICacheService> _cacheServiceMock;
+		private readonly Mock<IMapper> _mapperMock;
 
 		public ProductServiceTests()
 		{
 			_unitOfWorkMock = new Mock<IUnitOfWork>();
 			_discountServiceMock = new Mock<IDiscountService>();
 			_cacheServiceMock = new Mock<ICacheService>();
+			_mapperMock = new Mock<IMapper>();
 
-			_productService = new Application.Services.ProductService(_unitOfWorkMock.Object, _cacheServiceMock.Object, _discountServiceMock.Object);
+			_productService = new Application.Services.ProductService(_unitOfWorkMock.Object, _cacheServiceMock.Object, _discountServiceMock.Object, _mapperMock.Object);
 		}
 
 		[Fact]
@@ -41,6 +45,16 @@ namespace ProductService.Tests
 			_unitOfWorkMock.Setup(u => u.SaveAsync()).Returns(Task.CompletedTask);
 			_cacheServiceMock.Setup(c => c.GetStatusName(product.Status)).Returns("Active");
 			_discountServiceMock.Setup(d => d.GetDiscountAsync(product.ProductId)).ReturnsAsync(10);
+			_mapperMock.Setup(m => m.Map<ProductResponse>(It.IsAny<Product>()))
+				   .Returns((Product source) => new ProductResponse
+				   {
+					   ProductId = source.ProductId,
+					   Name = source.Name,
+					   Status = source.Status,
+					   Stock = source.Stock,
+					   Description = source.Description,
+					   Price = source.Price
+				   });
 
 			// Act
 			var result = await _productService.CreateProduct(product);
@@ -89,6 +103,16 @@ namespace ProductService.Tests
 			_unitOfWorkMock.Setup(u => u.SaveAsync()).Returns(Task.CompletedTask);
 			_cacheServiceMock.Setup(c => c.GetStatusName(existingProduct.Status)).Returns("Active");
 			_discountServiceMock.Setup(d => d.GetDiscountAsync(existingProduct.ProductId)).ReturnsAsync(10);
+			_mapperMock.Setup(m => m.Map<ProductResponse>(It.IsAny<Product>()))
+				   .Returns((Product source) => new ProductResponse
+				   {
+					   ProductId = source.ProductId,
+					   Name = source.Name,
+					   Status = source.Status,
+					   Stock = source.Stock,
+					   Description = source.Description,
+					   Price = source.Price
+				   });
 
 			// Act
 			var result = await _productService.UpdateProduct(productId, updateRequest);
@@ -128,6 +152,16 @@ namespace ProductService.Tests
 			_unitOfWorkMock.Setup(u => u.Product.GetAsync(x => x.ProductId == productId)).ReturnsAsync(product);
 			_cacheServiceMock.Setup(c => c.GetStatusName(product.Status)).Returns("Active");
 			_discountServiceMock.Setup(d => d.GetDiscountAsync(product.ProductId)).ReturnsAsync(10);
+			_mapperMock.Setup(m => m.Map<ProductResponse>(It.IsAny<Product>()))
+				   .Returns((Product source) => new ProductResponse
+				   {
+					   ProductId = source.ProductId,
+					   Name = source.Name,
+					   Status = source.Status,
+					   Stock = source.Stock,
+					   Description = source.Description,
+					   Price = source.Price
+				   });
 
 			// Act
 			var result = await _productService.GetProductById(productId);

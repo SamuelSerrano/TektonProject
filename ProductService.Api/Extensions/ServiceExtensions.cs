@@ -31,9 +31,7 @@ namespace ProductService.Api.Extensions
 
 			services.AddMemoryCache();
 			#endregion
-
-			
-			services.AddValidatorsFromAssemblyContaining<CreateProductCommandValidator>();
+						
 			
 			
 			return services;
